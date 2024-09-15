@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cmp"
+"cmp"
 	"fmt"
 )
 
