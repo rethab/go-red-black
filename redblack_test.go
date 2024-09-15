@@ -1,4 +1,4 @@
-package main
+package redblack
 
 import (
 	"cmp"
@@ -180,7 +180,7 @@ func TestRightRotatePanicWithoutLeftChild(t *testing.T) {
 
 	}()
 
-	tree.node.RightRotate()
+	tree.node.rightRotate()
 }
 
 func TestRightRotateWithoutRightGrandchild(t *testing.T) {
@@ -190,7 +190,7 @@ func TestRightRotateWithoutRightGrandchild(t *testing.T) {
 		tree.Insert(numbers[i])
 	}
 
-	tree.node.RightRotate()
+	tree.node.rightRotate()
 
 	for i := range numbers {
 		if !tree.Contains(numbers[i]) {
@@ -210,7 +210,7 @@ func TestRightRotate(t *testing.T) {
 		tree.Insert(numbers[i])
 	}
 
-	tree.node.RightRotate()
+	tree.node.rightRotate()
 
 	for i := range numbers {
 		if !tree.Contains(numbers[i]) {
@@ -230,7 +230,7 @@ func TestRightRotateNoUncle(t *testing.T) {
 		tree.Insert(numbers[i])
 	}
 
-	tree.node.RightRotate()
+	tree.node.rightRotate()
 
 	for i := range numbers {
 		if !tree.Contains(numbers[i]) {
@@ -273,7 +273,7 @@ func TestLeftRotateNoUncle(t *testing.T) {
 		tree.Insert(numbers[i])
 	}
 
-	tree.node.LeftRotate()
+	tree.node.leftRotate()
 
 	for i := range numbers {
 		if !tree.Contains(numbers[i]) {
@@ -297,7 +297,7 @@ func TestLeftRotatePanicWithoutRightChild(t *testing.T) {
 		}
 	}()
 
-	tree.node.LeftRotate()
+	tree.node.leftRotate()
 }
 
 func TestLeftRotateWithoutLeftGrandchild(t *testing.T) {
@@ -307,7 +307,7 @@ func TestLeftRotateWithoutLeftGrandchild(t *testing.T) {
 		tree.Insert(numbers[i])
 	}
 
-	tree.node.LeftRotate()
+	tree.node.leftRotate()
 
 	for i := range numbers {
 		if !tree.Contains(numbers[i]) {
@@ -327,7 +327,7 @@ func TestLeftRotate(t *testing.T) {
 		tree.Insert(numbers[i])
 	}
 
-	tree.node.LeftRotate()
+	tree.node.leftRotate()
 
 	for i := range numbers {
 		if !tree.Contains(numbers[i]) {
@@ -356,21 +356,21 @@ func TestParentRefsSmallTree(t *testing.T) {
 	}
 }
 
-func validateParentRefs[O cmp.Ordered](t *testing.T, n *Node[O]) {
+func validateParentRefs[O cmp.Ordered](t *testing.T, n *node[O]) {
 	if n == nil {
 		return
 	}
 
 	if n.p != nil && n.p.left != n && n.p.right != n {
-		t.Fatalf("%s is not a child of their parent", String(n.val))
+		t.Fatalf("%s is not a child of their parent", show(n.val))
 	}
 
 	if n.left != nil && n.left.p != n {
-		t.Fatalf("left child %s does not point back to parent", String(n.left.val))
+		t.Fatalf("left child %s does not point back to parent", show(n.left.val))
 	}
 
 	if n.right != nil && n.right.p != n {
-		t.Fatalf("right child %s does not point back to parent", String(n.left.val))
+		t.Fatalf("right child %s does not point back to parent", show(n.left.val))
 	}
 
 	validateParentRefs(t, n.left)
@@ -384,7 +384,7 @@ func TestUncleLeftTriangle(t *testing.T) {
 	tree.Insert(4)
 	tree.Insert(3)
 
-	if uncle, rel, ok := tree.node.right.left.Uncle(); !ok || uncle.val != 1 || rel != Triangle {
+	if uncle, rel, ok := tree.node.right.left.uncle(); !ok || uncle.val != 1 || rel != triangle {
 		t.Fatalf("Uncle is not 1, or not Triangle")
 	}
 	validateTreeProperties(t, tree.node)
@@ -397,7 +397,7 @@ func TestUncleRightTriangle(t *testing.T) {
 	tree.Insert(1)
 	tree.Insert(2)
 
-	if uncle, rel, ok := tree.node.left.right.Uncle(); !ok || uncle.val != 4 || rel != Triangle {
+	if uncle, rel, ok := tree.node.left.right.uncle(); !ok || uncle.val != 4 || rel != triangle {
 		t.Fatalf("Uncle is not 4, or not Triangle")
 	}
 	validateTreeProperties(t, tree.node)
@@ -410,7 +410,7 @@ func TestUncleLeftLine(t *testing.T) {
 	tree.Insert(4)
 	tree.Insert(5)
 
-	if uncle, rel, ok := tree.node.right.right.Uncle(); !ok || uncle.val != 1 || rel != Line {
+	if uncle, rel, ok := tree.node.right.right.uncle(); !ok || uncle.val != 1 || rel != line {
 		t.Fatalf("Uncle is not 1, or not Line")
 	}
 	validateTreeProperties(t, tree.node)
@@ -423,7 +423,7 @@ func TestUncleRightLine(t *testing.T) {
 	tree.Insert(1)
 	tree.Insert(0)
 
-	if uncle, rel, ok := tree.node.left.left.Uncle(); !ok || uncle.val != 4 || rel != Line {
+	if uncle, rel, ok := tree.node.left.left.uncle(); !ok || uncle.val != 4 || rel != line {
 		t.Fatalf("Uncle is not 4, or not Line")
 	}
 	validateTreeProperties(t, tree.node)
@@ -433,7 +433,7 @@ func TestNoUncleRoot(t *testing.T) {
 	tree := MakeTree[int]()
 	tree.Insert(1)
 
-	if _, _, ok := tree.node.Uncle(); ok {
+	if _, _, ok := tree.node.uncle(); ok {
 		t.Fatalf("Has an uncle")
 	}
 	validateTreeProperties(t, tree.node)
@@ -444,7 +444,7 @@ func TestNoUncleNoGrandparentLeft(t *testing.T) {
 	tree.Insert(2)
 	tree.Insert(1)
 
-	if _, _, ok := tree.node.left.Uncle(); ok {
+	if _, _, ok := tree.node.left.uncle(); ok {
 		t.Fatalf("Has an uncle")
 	}
 	validateTreeProperties(t, tree.node)
@@ -455,7 +455,7 @@ func TestNoUncleNoGrandparentRight(t *testing.T) {
 	tree.Insert(1)
 	tree.Insert(2)
 
-	if _, _, ok := tree.node.right.Uncle(); ok {
+	if _, _, ok := tree.node.right.uncle(); ok {
 		t.Fatalf("Has an uncle")
 	}
 	validateTreeProperties(t, tree.node)
@@ -483,7 +483,7 @@ func TestNewInsertRootIsBlack(t *testing.T) {
 	tree := MakeTree[int]()
 	tree.Insert(1)
 
-	if tree.node.color != Black {
+	if tree.node.color != black {
 		t.Fatalf("root is not black")
 	}
 
@@ -495,23 +495,23 @@ func TestRecolorUncleRed(t *testing.T) {
 	tree.Insert(1)
 	tree.Insert(4)
 
-	if tree.node.right.color != Red {
+	if tree.node.right.color != red {
 		t.Fatalf("Precondition: right child should be red")
 
 	}
-	if tree.node.left.color != Red {
+	if tree.node.left.color != red {
 		t.Fatalf("Precondition: left child should be red")
 	}
 
 	tree.Insert(2)
 
-	if tree.node.right.color != Black {
+	if tree.node.right.color != black {
 		t.Fatalf("Uncle was not recolored")
 	}
-	if tree.node.left.color != Black {
+	if tree.node.left.color != black {
 		t.Fatalf("Parent was not recolored")
 	}
-	if tree.node.color != Black {
+	if tree.node.color != black {
 		t.Fatalf("Grandparent was not recolored")
 	}
 	validateTreeProperties(t, tree.node)
@@ -523,21 +523,21 @@ func TestRotateLineLeft(t *testing.T) {
 	tree.Insert(5)
 	tree.Insert(2)
 
-	tree.node.right.color = Black
-	tree.node.left.color = Red
+	tree.node.right.color = black
+	tree.node.left.color = red
 
 	tree.Insert(1)
 
 	if tree.node.val != 2 {
 		t.Fatalf("2 is not root")
 	}
-	if tree.node.color != Black {
+	if tree.node.color != black {
 		t.Fatalf("parent not recolored")
 	}
 	if tree.node.right.val != 4 {
 		t.Fatalf("4 is not right child")
 	}
-	if tree.node.right.color != Red {
+	if tree.node.right.color != red {
 		t.Fatalf("Grandparent not recolored")
 	}
 	if tree.node.left.val != 1 {
@@ -552,21 +552,21 @@ func TestRotateLineRight(t *testing.T) {
 	tree.Insert(1)
 	tree.Insert(3)
 
-	tree.node.left.color = Black
-	tree.node.right.color = Red
+	tree.node.left.color = black
+	tree.node.right.color = red
 
 	tree.Insert(4)
 
 	if tree.node.val != 3 {
 		t.Fatalf("3 is not root")
 	}
-	if tree.node.color != Black {
+	if tree.node.color != black {
 		t.Fatalf("Parent is not black")
 	}
 	if tree.node.left.val != 2 {
 		t.Fatalf("2 is not left child")
 	}
-	if tree.node.left.color != Red {
+	if tree.node.left.color != red {
 		t.Fatalf("Grandparent is not red")
 	}
 	if tree.node.right.val != 4 {
@@ -620,13 +620,13 @@ func TestValidateTreePropertiesBig(t *testing.T) {
 	validateTreeProperties(t, tree.node)
 }
 
-func validateTreeProperties[O cmp.Ordered](t *testing.T, n *Node[O]) {
+func validateTreeProperties[O cmp.Ordered](t *testing.T, n *node[O]) {
 	if n == nil {
 		return
 
 	}
 
-	if n.color != Black {
+	if n.color != black {
 		t.Fatalf("Root is not black")
 	}
 
@@ -640,17 +640,17 @@ func validateTreeProperties[O cmp.Ordered](t *testing.T, n *Node[O]) {
 
 }
 
-func validateRedNodeHasBlackChildren[O cmp.Ordered](n *Node[O]) error {
+func validateRedNodeHasBlackChildren[O cmp.Ordered](n *node[O]) error {
 	if n == nil {
 		return nil
 	}
 
-	if n.color == Red {
-		if n.left != nil && n.left.color != Black {
-			return fmt.Errorf("Red node %s has red left child %s", String(n.val), String(n.left.val))
+	if n.color == red {
+		if n.left != nil && n.left.color != black {
+			return fmt.Errorf("Red node %s has red left child %s", show(n.val), show(n.left.val))
 		}
-		if n.right != nil && n.right.color != Black {
-			return fmt.Errorf("Red node %s has red right child %s", String(n.val), String(n.right.val))
+		if n.right != nil && n.right.color != black {
+			return fmt.Errorf("Red node %s has red right child %s", show(n.val), show(n.right.val))
 		}
 	}
 
@@ -665,7 +665,7 @@ func validateRedNodeHasBlackChildren[O cmp.Ordered](n *Node[O]) error {
 	return nil
 }
 
-func validateSameNumberOfBlackNodesToLeaves[O cmp.Ordered](n *Node[O]) (int, error) {
+func validateSameNumberOfBlackNodesToLeaves[O cmp.Ordered](n *node[O]) (int, error) {
 	if n == nil {
 		return 0, nil
 	}
@@ -685,7 +685,7 @@ func validateSameNumberOfBlackNodesToLeaves[O cmp.Ordered](n *Node[O]) (int, err
 	}
 
 	self := 0
-	if n.color == Black {
+	if n.color == black {
 		self = 1
 	}
 
