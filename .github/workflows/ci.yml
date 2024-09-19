@@ -7,12 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
+      - uses: WillAbides/setup-go-faster@v1.14.0
+	with:
           go-version: 'stable'
       - name: go fmt
         run: test -z $(gofmt -l .)
       - name: go vet
         run: go vet
+      - name: staticcheck
+        uses: dominikh/staticcheck-action@v1
+        with:
+          version: "latest"
       - name: go test
         run: go test
