@@ -17,6 +17,7 @@ jobs:
       - name: staticcheck
         uses: dominikh/staticcheck-action@v1
         with:
-          version: "latest"
+          version: 'latest'
+          install-go: false
       - name: go test
         run: go test
